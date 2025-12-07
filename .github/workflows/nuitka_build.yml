@@ -39,5 +39,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: PhotographerClientManager-Windows-Executable
-        # Nuitka --onefile 模式下，文件在 .dist 目录中
-        path: build\deepseek_python_20251207_1f32fc.dist\deepseek_python_20251207_1f32fc.exe
+        # 尝试 Nuitka --onefile 模式下最常见的输出路径
+        path: build\deepseek_python_20251207_1f32fc.exe
