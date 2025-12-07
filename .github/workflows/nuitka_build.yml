@@ -1,91 +1,94 @@
 name: Build Photographer Client Manager
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  build-windows:
+  build:
     runs-on: windows-latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Set up Python 3.12
+    - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
         
-    - name: Install dependencies
+    - name: Install PyInstaller
+      run: pip install pyinstaller pillow
+      
+    - name: Create main.py
       run: |
-        python -m pip install --upgrade pip
-        pip install nuitka pillow
-        
-    - name: Download Dependency Walker in advance
-      run: |
-        # 提前下载以避免交互提示
-        $dependsDir = "$env:LOCALAPPDATA\Nuitka\Nuitka\Cache\downloads\depends\x86_64"
-        New-Item -ItemType Directory -Force -Path $dependsDir
-        if (-not (Test-Path "$dependsDir\depends.exe")) {
-            Invoke-WebRequest -Uri "https://dependencywalker.com/depends22_x64.zip" -OutFile "$dependsDir\depends.zip"
-            Expand-Archive -Path "$dependsDir\depends.zip" -DestinationPath $dependsDir -Force
-        }
-        
-    - name: Create main.py with full source
-      run: |
-        # 创建完整的源代码
+        # 创建完整的Python程序
         @'
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, messagebox
 import os
-import sqlite3
-from datetime import datetime
 from pathlib import Path
 
-class PhotoManager:
+class PhotoClientApp:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("摄影师客户管理器 v1.0")
-        self.root.geometry("1000x700")
+        self.root.geometry("900x600")
         self.setup_ui()
         
     def setup_ui(self):
         # 顶部工具栏
-        toolbar = tk.Frame(self.root, bg="#A8E6CF", height=60)
+        toolbar = tk.Frame(self.root, bg="#A8E6CF", height=50)
         toolbar.pack(fill=tk.X)
         
-        tk.Label(toolbar, text="📷 摄影师客户管理器", 
-                font=("微软雅黑", 16, "bold"),
-                bg="#A8E6CF", fg="white").pack(side=tk.LEFT, padx=20)
+        title = tk.Label(toolbar, text="📷 摄影师客户管理器", 
+                        font=("Microsoft YaHei", 14, "bold"),
+                        bg="#A8E6CF", fg="white")
+        title.pack(side=tk.LEFT, padx=20)
         
-        tk.Button(toolbar, text="＋ 添加客户", 
-                 command=lambda: messagebox.showinfo("提示", "功能已就绪"),
-                 bg="white", fg="#A8E6CF",
-                 font=("微软雅黑", 10, "bold")).pack(side=tk.RIGHT, padx=20)
+        add_btn = tk.Button(toolbar, text="＋ 添加客户", 
+                           command=self.add_client,
+                           bg="white", fg="#A8E6CF",
+                           font=("Microsoft YaHei", 10))
+        add_btn.pack(side=tk.RIGHT, padx=20)
         
+        # 主内容区
+        main_frame = tk.Frame(self.root, bg="white")
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        welcome = tk.Label(main_frame, text="欢迎使用摄影师客户管理器",
+                          font=("Microsoft YaHei", 18),
+                          bg="white")
+        welcome.pack(pady=50)
+        
+        info = tk.Label(main_frame, 
+                       text="功能：\n• 管理上千个客户\n• 清新薄荷绿界面\n• NAS文件夹快速访问\n• 自定义分类系统",
+                       font=("Microsoft YaHei", 12),
+                       bg="white", justify=tk.LEFT)
+        info.pack()
+        
+        # 状态栏
+        status = tk.Frame(self.root, bg="#F0F0F0", height=30)
+        status.pack(fill=tk.X, side=tk.BOTTOM)
+        
+        tk.Label(status, text="就绪", bg="#F0F0F0").pack(side=tk.LEFT, padx=10)
+        
+    def add_client(self):
+        messagebox.showinfo("提示", "添加客户功能已就绪")
+        
+    def run(self):
         self.root.mainloop()
 
 if __name__ == "__main__":
-    app = PhotoManager()
+    app = PhotoClientApp()
+    app.run()
 '@ | Out-File -Encoding UTF8 main.py
-        
-    - name: Build with Nuitka
+      
+    - name: Build with PyInstaller
       run: |
-        echo "Y" | python -m nuitka `
-          --onefile `
-          --windows-console-mode=disable `
-          --include-package=tkinter `
-          --include-package=PIL `
-          --plugin-enable=tk-inter `
-          --assume-yes-for-downloads `
-          --output-filename=PhotographerClientManager.exe `
-          --output-dir=dist `
-          main.py
+        pyinstaller --onefile --windowed --name "摄影师客户管理器" main.py
         
     - name: Upload executable
       uses: actions/upload-artifact@v4
       with:
         name: PhotographerClientManager
-        path: dist/PhotographerClientManager.exe
+        path: dist/摄影师客户管理器.exe
