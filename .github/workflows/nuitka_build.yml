@@ -22,7 +22,7 @@ jobs:
       run: pip install nuitka Pillow
 
     - name: Run Nuitka Compilation
-      # 注意：Windows Runner 默认使用 cmd shell，行继续符为 ^
+      # 注意：使用 echo Y | 解决 Nuitka 的交互式提示
       run: |
         echo Y | nuitka ^
           --standalone ^
@@ -35,7 +35,7 @@ jobs:
           deepseek_python_20251207_1f32fc.py
       shell: cmd
 
-- name: Upload Artifact
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: PhotographerClientManager-Windows-Executable
