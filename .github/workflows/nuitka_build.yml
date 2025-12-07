@@ -26,7 +26,6 @@ jobs:
       run: |
         echo Y | nuitka ^
           --standalone ^
-          --onefile ^
           --windows-disable-console ^
           --include-package=tkinter ^
           --include-package=PIL ^
@@ -39,5 +38,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: PhotographerClientManager-Windows-Executable
-        # Nuitka --onefile 模式下，最终文件在 .onefile 目录中
-        path: build\deepseek_python_20251207_1f32fc.onefile\deepseek_python_20251207_1f32fc.exe
+        # 在 --standalone 模式下，Nuitka 将所有文件放在以脚本名命名的文件夹中
+        path: build\deepseek_python_20251207_1f32fc.dist
