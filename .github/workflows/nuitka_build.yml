@@ -24,7 +24,7 @@ jobs:
     - name: Run Nuitka Compilation
       # 注意：Windows Runner 默认使用 cmd shell，行继续符为 ^
       run: |
-        nuitka ^
+        echo Y | nuitka ^
           --standalone ^
           --onefile ^
           --windows-disable-console ^
@@ -34,8 +34,6 @@ jobs:
           --output-dir=build ^
           deepseek_python_20251207_1f32fc.py
       shell: cmd
-      env:
-        NUITKA_NONINTERACTIVE: 1
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
