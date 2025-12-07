@@ -23,17 +23,18 @@ jobs:
 
     - name: Run Nuitka Compilation
       # 注意：Windows Runner 默认使用 cmd shell，行继续符为 ^
-      run: |
-        nuitka ^
-          --standalone ^
-          --onefile ^
-          --windows-disable-console ^
-          --include-package=tkinter ^
-          --include-package=PIL ^
-          --include-data-file=icon.ico=icon.ico ^
-          --output-dir=build ^
-          deepseek_python_20251207_1f32fc.py
-      shell: cmd
+     run: |
+      nuitka ^
+        --no-interaction ^
+        --standalone ^
+        --onefile ^
+        --windows-disable-console ^
+        --include-package=tkinter ^
+        --include-package=PIL ^
+        --include-data-file=icon.ico=icon.ico ^
+        --output-dir=build ^
+        deepseek_python_20251207_1f32fc.py
+    shell: cmd
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
