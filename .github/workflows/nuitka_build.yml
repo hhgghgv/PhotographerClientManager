@@ -35,11 +35,9 @@ jobs:
           deepseek_python_20251207_1f32fc.py
       shell: cmd
 
-        - name: Upload Artifact
-          uses: actions/upload-artifact@v4
-          with:
-            name: PhotographerClientManager-Windows-Executable
-            # 确保这里只有一个 path: 字段
-            path: 'build\*.exe'
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: PhotographerClientManager-Windows-Executable
         # 使用通配符查找 build 目录下所有 .exe 文件
-        path: build\*.exe
+        path: 'build\*.exe'
