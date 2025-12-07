@@ -1,94 +1,44 @@
-name: Build Photographer Client Manager
+name: Build GUI App
 
-on:
-  workflow_dispatch:
+on: workflow_dispatch
 
 jobs:
   build:
     runs-on: windows-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Python
-      uses: actions/setup-python@v5
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-        
-    - name: Install PyInstaller
-      run: pip install pyinstaller pillow
-      
-    - name: Create main.py
+    
+    - run: pip install pyinstaller
+    
+    - name: Create GUI Program
       run: |
-        # 创建完整的Python程序
-        @'
+        set-content -path main.py -value @"
 import tkinter as tk
-from tkinter import ttk, messagebox
-import os
-from pathlib import Path
+from tkinter import messagebox
 
-class PhotoClientApp:
-    def __init__(self):
-        self.root = tk.Tk()
-        self.root.title("摄影师客户管理器 v1.0")
-        self.root.geometry("900x600")
-        self.setup_ui()
-        
-    def setup_ui(self):
-        # 顶部工具栏
-        toolbar = tk.Frame(self.root, bg="#A8E6CF", height=50)
-        toolbar.pack(fill=tk.X)
-        
-        title = tk.Label(toolbar, text="📷 摄影师客户管理器", 
-                        font=("Microsoft YaHei", 14, "bold"),
-                        bg="#A8E6CF", fg="white")
-        title.pack(side=tk.LEFT, padx=20)
-        
-        add_btn = tk.Button(toolbar, text="＋ 添加客户", 
-                           command=self.add_client,
-                           bg="white", fg="#A8E6CF",
-                           font=("Microsoft YaHei", 10))
-        add_btn.pack(side=tk.RIGHT, padx=20)
-        
-        # 主内容区
-        main_frame = tk.Frame(self.root, bg="white")
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
-        welcome = tk.Label(main_frame, text="欢迎使用摄影师客户管理器",
-                          font=("Microsoft YaHei", 18),
-                          bg="white")
-        welcome.pack(pady=50)
-        
-        info = tk.Label(main_frame, 
-                       text="功能：\n• 管理上千个客户\n• 清新薄荷绿界面\n• NAS文件夹快速访问\n• 自定义分类系统",
-                       font=("Microsoft YaHei", 12),
-                       bg="white", justify=tk.LEFT)
-        info.pack()
-        
-        # 状态栏
-        status = tk.Frame(self.root, bg="#F0F0F0", height=30)
-        status.pack(fill=tk.X, side=tk.BOTTOM)
-        
-        tk.Label(status, text="就绪", bg="#F0F0F0").pack(side=tk.LEFT, padx=10)
-        
-    def add_client(self):
-        messagebox.showinfo("提示", "添加客户功能已就绪")
-        
-    def run(self):
-        self.root.mainloop()
+def main():
+    root = tk.Tk()
+    root.title('摄影师客户管理器')
+    root.geometry('800x500')
+    
+    label = tk.Label(root, text='软件已准备就绪！', font=('微软雅黑', 16))
+    label.pack(pady=50)
+    
+    btn = tk.Button(root, text='添加客户', command=lambda: messagebox.showinfo('提示', '功能正常'))
+    btn.pack()
+    
+    root.mainloop()
 
-if __name__ == "__main__":
-    app = PhotoClientApp()
-    app.run()
-'@ | Out-File -Encoding UTF8 main.py
-      
-    - name: Build with PyInstaller
-      run: |
-        pyinstaller --onefile --windowed --name "摄影师客户管理器" main.py
-        
-    - name: Upload executable
-      uses: actions/upload-artifact@v4
+if __name__ == '__main__':
+    main()
+"@
+    
+    - run: pyinstaller --onefile --windowed --name PhotographerManager main.py
+    
+    - uses: actions/upload-artifact@v4
       with:
-        name: PhotographerClientManager
-        path: dist/摄影师客户管理器.exe
+        name: PhotographerManager
+        path: dist/PhotographerManager.exe
