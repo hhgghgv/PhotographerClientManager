@@ -23,35 +23,105 @@ jobs:
         python -m pip install --upgrade pip
         pip install nuitka pillow
         
-    - name: Create main.py file
+    - name: Pre-download Dependency Walker (解决交互问题)
+      run: |
+        # 提前下载依赖，避免交互式提示
+        $dependsUrl = "https://dependencywalker.com/depends22_x64.zip"
+        $dependsDir = "$env:LOCALAPPDATA\Nuitka\Nuitka\Cache\downloads\depends\x86_64"
+        New-Item -ItemType Directory -Force -Path $dependsDir
+        Invoke-WebRequest -Uri $dependsUrl -OutFile "$dependsDir\depends.zip"
+        Expand-Archive -Path "$dependsDir\depends.zip" -DestinationPath $dependsDir -Force
+        
+    - name: Create main.py with full source code
       run: |
         # 创建完整的源代码文件
-        echo "import tkinter as tk" > main.py
-        echo "from tkinter import ttk, filedialog, messagebox" >> main.py
-        echo "import os" >> main.py
-        echo "import json" >> main.py
-        echo "import sqlite3" >> main.py
-        echo "from datetime import datetime" >> main.py
-        echo "import sys" >> main.py
-        echo "from pathlib import Path" >> main.py
-        echo "" >> main.py
-        echo "print('正在启动摄影师客户管理器...')" >> main.py
-        echo "input('按回车键退出...')" >> main.py
+        @"
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+import os
+import json
+import sqlite3
+from datetime import datetime
+import sys
+from pathlib import Path
+
+class SimplePhotoManager:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("摄影师客户管理器 v1.0")
+        self.root.geometry("1000x700")
         
-    - name: Build with Nuitka (PowerShell compatible)
+        # 设置主题色（薄荷绿）
+        self.theme_color = "#A8E6CF"
+        self.bg_color = "#FFFFFF"
+        
+        self.setup_ui()
+        
+    def setup_ui(self):
+        # 顶部工具栏
+        toolbar = tk.Frame(self.root, bg=self.theme_color, height=60)
+        toolbar.pack(fill=tk.X)
+        
+        tk.Label(toolbar, text="📷 摄影师客户管理器", 
+                font=("微软雅黑", 16, "bold"),
+                bg=self.theme_color, fg="white").pack(side=tk.LEFT, padx=20)
+        
+        # 添加客户按钮
+        tk.Button(toolbar, text="＋ 添加客户", 
+                 command=self.add_client,
+                 bg="white", fg=self.theme_color,
+                 font=("微软雅黑", 10, "bold"),
+                 relief=tk.FLAT).pack(side=tk.RIGHT, padx=20)
+        
+        # 主内容区域
+        main_frame = tk.Frame(self.root, bg=self.bg_color)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        tk.Label(main_frame, text="欢迎使用摄影师客户管理器",
+                font=("微软雅黑", 20),
+                bg=self.bg_color).pack(pady=50)
+        
+        tk.Label(main_frame, text="点击上方按钮添加客户\n双击客户卡片打开文件夹\n右键菜单管理客户",
+                font=("微软雅黑", 12),
+                bg=self.bg_color, fg="#666666").pack()
+        
+        # 状态栏
+        statusbar = tk.Frame(self.root, bg="#F0F0F0", height=30)
+        statusbar.pack(fill=tk.X, side=tk.BOTTOM)
+        
+        tk.Label(statusbar, text="就绪", bg="#F0F0F0", fg="#666666").pack(side=tk.LEFT, padx=10)
+        
+    def add_client(self):
+        messagebox.showinfo("提示", "添加客户功能")
+        
+    def run(self):
+        self.root.mainloop()
+
+if __name__ == "__main__":
+    app = SimplePhotoManager()
+    app.run()
+"@ > main.py
+        
+    - name: Build with Nuitka (with auto-confirm)
       run: |
-        python -m nuitka `
+        # 使用 echo 自动回答 Yes
+        echo "Y" | python -m nuitka `
           --onefile `
-          --windows-disable-console `
+          --windows-console-mode=disable `
           --include-package=tkinter `
           --include-package=PIL `
           --plugin-enable=tk-inter `
+          --assume-yes-for-downloads `
           --output-filename=PhotographerClientManager.exe `
           --output-dir=dist `
           main.py
         
+    - name: List generated files
+      run: dir dist
+      
     - name: Upload executable
       uses: actions/upload-artifact@v4
       with:
         name: PhotographerClientManager-v1.0
         path: dist/PhotographerClientManager.exe
+        retention-days: 90
